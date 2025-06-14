@@ -5,3 +5,5 @@
 ![GitHub stars](https://img.shields.io/github/stars/qiufen512/LLM?style=social)![GitHub forks](https://img.shields.io/github/forks/qiufen512/LLM?style=social)  ![GitHub repo size](https://img.shields.io/github/repo-size/qiufen512/LLM?color=blue) ![GitHub contributors](https://img.shields.io/github/contributors/qiufen512/LLM?color=green) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/qiufen512/LLM?color=purple) ![GitHub last commit](https://img.shields.io/github/last-commit/qiufen512/LLM?color=yellow) ![GitHub issues](https://img.shields.io/github/issues/qiufen512/LLM?color=red) ![GitHub license](https://img.shields.io/github/license/qiufen512/LLM?color=brightgreen)
 
 </div>
+
+<h2 align="center"> 内容来源于网络，如有错误联系作者更改</h2>
