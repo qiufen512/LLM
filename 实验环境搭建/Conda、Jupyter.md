@@ -70,13 +70,9 @@
 
 ​	安装Jupyter Notebook的前提是需要安装了Python（3.3版本及以上，或2.7版本），这说明当你使用conda创建新环境，Python版本不适配Jupyter时，在Annaconda控制台中下载新环境中的Jupyter是会失败的。常规来说，安装了Anaconda发行版时已经自动为你安装了Jupyter Notebook，我们通过annaconda navigator打开的Jupyter都是在系统家目录下。
 
-- 修改Jupyter Notebook创建文件时的存储路径
-
-  
-
 - conda环境 --> Jupyter kernel
 
-  当我们在conda中创建完新环境后想在Jupyter中使用时，必须将将环境注册为Jupyter kernel，首先安装ipykernel
+  当我们在conda中创建完新环境后想在Jupyter中使用时，必须将环境注册为Jupyter kernel，首先安装ipykernel，需要先激活目标环境再安装
 
   ipykernel的作用：
 
@@ -112,6 +108,46 @@
    }
   }
   ```
+  
+  注册成功后新建Jupyter就可以选择我们新建的内核啦
+  
+  ![image-20250622154442263](C:\Users\17726\AppData\Roaming\Typora\typora-user-images\image-20250622154442263.png)
 
 
-- 
+- 选择Jupyter的服务器运行时文件和默认启动工作目录
+
+  每次启动 Jupyter Notebook/Lab 时都会生成新的临时文件，如果没有修改服务器运行时文件的存储路径，那么可以在下面的路径中查看`C:/Users/17726/AppData/Roaming/jupyter/runtime`
+
+  jpserver-<PID>.json（记录服务器信息，如端口、Token）
+
+  jpserver-<PID>-open.html（用于浏览器自动跳转）
+
+  那么如何修改呢？可以查看当前 Jupyter 配置路径
+
+  ```bash
+  jupyter --config-dir
+  ```
+
+  如果不存在则需要先生成默认配置，该配置文件会存储在`C:\Users\<你的用户名>\.jupyter\jupyter_notebook_config.py`
+
+  ```bash
+  jupyter notebook --generate-config
+  ```
+
+  生成后修改默认配置中的如下选项
+
+  ```python
+  c.ServerApp.runtime_dir = ''  # 替换为你想存储的路径
+  ```
+
+  定义 Jupyter Notebook 的默认启动目录（即打开浏览器时显示的根目录），固定工作目录，避免路径混乱
+
+  修改 Jupyter 的配置文件 `jupyter_notebook_config.py`，添加默认启动目录
+
+  ```python
+  c.ServerApp.notebook_dir = ''  # 替换为你想存储的路径
+  ```
+
+  
+
+​	
