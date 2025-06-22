@@ -1,4 +1,4 @@
-# 使用LLM API
+# LLM API配置
 
 ## OpenAI
 
@@ -53,3 +53,7 @@
   如图所示则已正确加载
 
   ![image-20250622205600584](C:\Users\17726\AppData\Roaming\Typora\typora-user-images\image-20250622205600584.png)
+
+## 文心一言
+
+# 
