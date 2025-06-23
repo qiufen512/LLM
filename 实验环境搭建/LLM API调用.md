@@ -1,3 +1,5 @@
+
+
 # LLM API配置
 
 ## OpenAI
@@ -56,4 +58,60 @@
 
 ## 文心一言
 
-# 
+- 登录千帆ModelBuilder控制台，点击用户账号 >安全认证，进入Access Key管理界面
+
+  获取安全认证Access Key/Secret Key后在.env中填入
+
+  ```json
+  QIANFAN_ACCESS_KEY=""  # 替换为你的实际ACCESS KEY
+  QIANFAN_SECRET_KEY=""  # 替换为你的实际SECRET_KEY
+  ```
+
+  也可以参考千帆大模型Python SDK的调用方式
+
+  ```python
+  import os
+  os.environ["QIANFAN_ACCESS_KEY"] = "..."
+  os.environ["QIANFAN_SECRET_KEY"] = "..."
+  ```
+
+- 为当前环境下载千帆的python库
+
+  ```python
+  pip install qianfan
+  ```
+
+- 通过下面代码验证是否调用成功
+
+  ```python
+  import os
+  from dotenv import load_dotenv, find_dotenv
+  import qianfan
+  
+  # 加载环境变量
+  _ = load_dotenv(find_dotenv())
+  
+  # 设置 AK/SK
+  qianfan.AK(os.getenv("QIANFAN_AK"))
+  qianfan.SK(os.getenv("QIANFAN_SK"))
+  
+  def gen_wenxin_messages(prompt):
+      messages = [{"role": "user", "content": prompt}]
+      return messages
+  
+  def get_completion(prompt, model="ERNIE-Bot", temperature=0.01):
+      chat_comp = qianfan.ChatCompletion()
+      resp = chat_comp.do(
+          messages=gen_wenxin_messages(prompt),
+          model=model,
+          temperature=temperature,
+          system="你是一名个人助理-⼩鲸鱼"
+      )
+      return resp["result"]
+  
+  # 测试调用
+  response = get_completion("你好，你是谁")
+  print(response)
+  ```
+
+## 还有其他模型的调用，具体可以参考各大模型的官网~
