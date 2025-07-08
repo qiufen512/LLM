@@ -8,6 +8,57 @@
 
 提示模板负责将用户输入格式化为可传递给语言模型的格式
 
+PromptTemplate是一个带标记的文本字符串，可以接受来自最终用户的一组参数并生成提示
+
+- 基础模板
+
+  ```python
+  from langchain import PromptTemplate
+  prompt_template = PromptTemplate.from_template(
+      "Tell me a {adjective} joke about {content}."
+  )
+  prompt_template.format(adjective="sad",content="chickens")
+  // 输出
+  'Tell me a sad joke about chickens.'
+  ```
+
+- 分阶段的注入参数：Partial
+
+  - 字符串的部分格式化
+
+  ```python
+  from langchain import PromptTemplate
+  prompt_template = PromptTemplate.from_template(
+      "Tell me a {adjective} joke about {content}."
+  )
+  partialPrompt = prompt_template.partial(adjective="sad")
+  partialPrompt.format(content="chickens")
+  ```
+
+  ```python
+  prompt = PromptTemplate(
+      template="{foo}{bar}", input_variables=["bar"], partial_variables={"foo": "foo"}
+  )
+  print(prompt.format(bar="baz"))
+  ```
+
+  - 带函数的部分格式化
+
+  ```python
+  from datetime import datetime
+  
+  def _get_datetime():
+      now = datetime.now()
+      return now.strftime("%m/%d/%Y, %H:%M:%S")
+  
+  prompt = PromptTemplate(
+      template="Tell me a {adjective} joke about the day {date}",
+      input_variables=["adjective", "date"],
+  )
+  partial_prompt = prompt.partial(date=_get_datetime)
+  print(partial_prompt.format(adjective="funny"))
+  ```
+
 ## Lanuage Models
 
 - LLM
