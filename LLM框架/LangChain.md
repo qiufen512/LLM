@@ -97,17 +97,15 @@ llm.invoke("完成这条句子：今天的天气是")
 
 ### ChatModel
 
-`聊天模型在底层使用语言模型，但它们暴露的接口略有不同。它们不是暴露“文本输入，文本输出”的 API，而是暴露一个“聊天消息”作为输入和输出的接口。`
-
 langchain与很多提供商集成，可以通过下面的网站查看每家提供商的python包，包名为：langchain-{provider}。同时可以查看每个提供商的python包的使用方式
 
 []: https://python.langchain.com/api_reference/index.html
 
 这里我使用ollama作为聊天模型，langchain_community中已经集成了提供商，所以我在当前环境中下载langchain_community包
 
-注：通过ollama作为聊天模型时需要在本地将ollma运行起来
+注：通过ollama作为聊天模型时需要在本地将ollama运行起来
 
-安装langchain-community，集成了langchain-ollama
+这里我们安装langchain-community，集成了langchain-ollama
 
 ```shell
 conda install -c conda-forge langchain-community
@@ -137,6 +135,10 @@ chat_model.invoke("你是谁")
 ## Document Retrievers
 
 ## Document Loaders
+
+Document Loaders从文档加载数据并将数据转化成“文档”格式（一段文本和关联的元数据）
+
+
 
 ## Document Transformers / Splitters
 
