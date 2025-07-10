@@ -88,9 +88,25 @@ PromptTemplate是一个带标记的文本字符串，可以接受来自最终用
 
 主要与 ChatModel 配合使用（消息列表输入输出）
 
+```python
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama  # 或其他聊天模型
 
+template = ChatPromptTemplate([
+    ("system", "你是一位{role}，回复信息时语气偏向{style}。"),
+    ("human", "介绍关于{topic}的一个核心知识点。")
+])
 
+model = ChatOllama(model="qwen3:1.7b", temperature=0.7)
 
+chain = template | model
+
+response = chain.invoke({
+    "role": "技术专家",
+    "style": "专业但易懂",
+    "topic": "深度学习"
+})
+```
 
 ## Lanuage Models
 
@@ -191,7 +207,11 @@ chat_model.invoke("你是谁")
   llm_with_tools.invoke(query)
   ```
 
-  可以看到LLM 已经生成了调用工具的参数
+  使用 bind_tools 绑定工具后，ChatModel 在 invoke 时会获得对可用工具的感知 。模型会接收到工具的定义信息，包括工具名称、描述和参数架构，这些信息会在每次调用时传递给模型
+
+  ![image-20250710184624108](C:\Users\17726\AppData\Roaming\Typora\typora-user-images\image-20250710184624108.png)
+
+  llm_with_tools.invoke(query).tool_calls会返回工具名称、参数值字典以及（可选的）标识符的带类型的字典，如果没有工具调用的信息则该列表返回为空
 
   ```json
   tool_calls=[
@@ -208,9 +228,65 @@ chat_model.invoke("你是谁")
   llm_with_tools  = llm.bind_tools(tools,,tool_choice="add")
   ```
 
+#### 让模型返回结构化输出
+
+结构化的输出用于下游系统
+
+- 几种从模型获取结构化输出的策略
+
+  1. with_structured_output
+  2. Few-shot prompting 
+  3. 其他的可以查阅官方文档
+
+  ```python
+  from langchain_ollama.chat_models import ChatOllama
+  from langchain_core.tools import tool
+  from pydantic import BaseModel, Field
+  from typing import Optional
+  from pydantic import BaseModel, Field
   
+  llm = ChatOllama(
+      model="qwen3:1.7b",
+      temperature=0.7,
+  )
+  
+  json_schema = {
+      "title": "joke",
+      "description": "Joke to tell user.",
+      "type": "object",
+      "properties": {
+          "setup": {
+              "type": "string",
+              "description": "The setup of the joke",
+          },
+          "punchline": {
+              "type": "string",
+              "description": "The punchline to the joke",
+          },
+          "rating": {
+              "type": "integer",
+              "description": "How funny the joke is, from 1 to 10",
+          },
+      },
+      "required": ["setup", "punchline","rating"],
+  }
+  structured_llm = llm.with_structured_output(json_schema)
+  structured_llm.invoke("Tell me a joke about cats")
+  ```
 
+#### 流式输出
 
+```python
+from langchain_ollama.chat_models import ChatOllama
+from pydantic import BaseModel, Field
+
+llm = ChatOllama(
+    model="qwen3:1.7b",
+    temperature=0.7,
+)
+for chunk in llm.stream("Write me a 1 verse song about goldfish on the moon"):
+    print(chunk.content, end="|", flush=True)
+```
 
 ## Output Parsers
 
