@@ -1,3 +1,5 @@
+
+
 # Model I/O
 
 管理大语言模型（Models）及其输入（Prompts）和格式化输出（Output Parsers）
@@ -7,6 +9,21 @@
 ## Prompts
 
 提示模板负责将用户输入格式化为可传递给语言模型的格式
+
+langchain官方文档中Prompt的类层次结构
+
+BasePromptTemplate --> PipelinePromptTemplate
+                       					  StringPromptTemplate --> PromptTemplate
+                                                											FewShotPromptTemplate
+                                                											FewShotPromptWithTemplates
+                       					  BaseChatPromptTemplate --> AutoGPTPrompt
+                                                  												ChatPromptTemplate --> AgentScratchPadChatPromptTemplate
+
+BaseMessagePromptTemplate --> MessagesPlaceholder
+                              								BaseStringMessagePromptTemplate --> ChatMessagePromptTemplate
+                                                                  																	HumanMessagePromptTemplate
+                                                                  																	AIMessagePromptTemplate
+                                                                  																	SystemMessagePromptTemplate
 
 ### PromptTemplate
 
@@ -97,13 +114,9 @@ llm.invoke("完成这条句子：今天的天气是")
 
 ### ChatModel
 
-langchain与很多提供商集成，可以通过下面的网站查看每家提供商的python包，包名为：langchain-{provider}。同时可以查看每个提供商的python包的使用方式
+langchain与很多LLM提供商集成，一般的包名为：langchain-{provider}。这里我使用ollama部署qwen3作为聊天模型，langchain_community中已经集成了提供商，所以我在当前环境中下载langchain_community包
 
-[]: https://python.langchain.com/api_reference/index.html
-
-这里我使用ollama作为聊天模型，langchain_community中已经集成了提供商，所以我在当前环境中下载langchain_community包
-
-注：通过ollama作为聊天模型时需要在本地将ollama运行起来
+注：通过ollama作为聊天模型时需要先在本地将ollama运行起来
 
 这里我们安装langchain-community，集成了langchain-ollama
 
@@ -111,7 +124,7 @@ langchain与很多提供商集成，可以通过下面的网站查看每家提�
 conda install -c conda-forge langchain-community
 ```
 
-测试能否正常响应
+如果能正常输出的话就说明已经连接成功了
 
 ```python
 from langchain_community.chat_models import ChatOllama
@@ -119,6 +132,85 @@ from langchain_community.chat_models import ChatOllama
 chat_model = ChatOllama(model="")// 输入你在ollama中下载的模型
 chat_model.invoke("你是谁")
 ```
+
+#### 如何执行函数/工具调用
+
+为什么要使用工具调用呢？
+
+1. 可以标准化接口，因为langchain集成很多LLM提供商，原生的LLM都引入了工具调用能力，但是采取不同的格式和约定。1. LangChain通过统一的.bind_tools() 方法方便开发者在不同的提供商之间切换，不需要修改代码逻辑
+2. 利用工具调用可以使得LLM访问、交互和操作外部资源
+3. 可以返回结构化的工具调用信息，LangChain还处理了工具调用可能出现的错误，如无效的JSON参数
+
+注：有些聊天模型可能不支持工具调用，具体可以查看官方文档
+
+- 多种工具定义
+
+  1. Python函数
+  2. Pydantic 类
+  3. TypedDict 类
+
+  这里只给出Python函数和Pydantic类的示例，具体可以查看LangChain的官方文档，主要是用到了bind_tools这个方法
+
+  ```python
+  from langchain_ollama.chat_models import ChatOllama
+  def add(a: int, b: int) -> int:
+      return a + b
+  
+  def multiply(a: int, b: int) -> int:
+      return a * b
+  
+  tools = [add,multiply]
+  llm = ChatOllama(
+      model="qwen3:1.7b",
+      temperature=0.7,
+  )
+  llm_with_tools  = llm.bind_tools(tools)
+  query = "3 * 12等于多少？"
+  llm_with_tools.invoke(query)
+  ```
+
+  ```python
+  from pydantic import BaseModel, Field
+  from langchain_ollama.chat_models import ChatOllama
+  
+  class add(BaseModel):
+      a: int = Field(..., description="第一个数")
+      b: int = Field(..., description="第二个数")
+  
+  class multiply(BaseModel):
+      a: int = Field(..., description="第一个数")
+      b: int = Field(..., description="第二个数")
+      
+  tools = [add, multiply]
+  llm = ChatOllama(
+      model="qwen3:1.7b",
+      temperature=0.7,
+  )
+  llm_with_tools  = llm.bind_tools(tools)
+  query = "3 * 12等于多少？"
+  llm_with_tools.invoke(query)
+  ```
+
+  可以看到LLM 已经生成了调用工具的参数
+
+  ```json
+  tool_calls=[
+      {'name': 'multiply', 
+       'args': {'a': 3, 'b': 12}, 
+       'id': 'bb1a50cc-039a-4d28-b793-71705ab91b43', 
+       'type': 'tool_call'}
+  ]
+  ```
+
+  可以用tool_choice强制LLM选择我们特定的工具
+
+  ```python
+  llm_with_tools  = llm.bind_tools(tools,,tool_choice="add")
+  ```
+
+  
+
+
 
 ## Output Parsers
 
