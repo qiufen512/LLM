@@ -316,6 +316,120 @@ Document Loaders从文档加载数据并将数据转化成“文档”格式（�
 
 用于存储和获取对话历史记录的功能模块
 
+
+
 # Chains
+
+可以将大语言模型、提示、输出解析器等多个组件串联起来，形成一个完整的处理流水线
+
+- 为了可以看到链路的全过程，我们可以顺便接入LangSmith
+
+  首先下载LangSmith的安装包
+
+  ```python
+  pip install -U langsmith
+  ```
+
+  在这个网站申请API_KEY: `https://smith.langchain.com/settings`，记得创建完复制下来，没有的话无法查看API KEY详情
+
+  ![image-20250711200633781](C:\Users\17726\AppData\Roaming\Typora\typora-user-images\image-20250711200633781.png)
+
+  
+
+- LLMChain 最基础的链
+
+  ```python
+  from langchain_ollama import ChatOllama
+  from langchain import PromptTemplate
+  from langchain.chains import LLMChain
+  
+  prompt = PromptTemplate(
+      input_variables=["product"],
+      template="为{product}写一个创意广告语"
+  )
+  
+  llm = ChatOllama(model= "qwen3:1.7b" ,temperature=0.7)
+  
+  chain = LLMChain(llm=llm, prompt=prompt)
+  
+  result = chain.invoke("智能手机")
+  print(result)
+  ```
+
+- SimpleSequentialChain 简单顺序链
+
+  上一个的输出可以作为下一个的输入
+
+  ```python
+  from langchain_ollama import ChatOllama
+  from langchain import PromptTemplate
+  from langchain.chains import LLMChain
+  from langchain.chains import SimpleSequentialChain
+  
+  llm = ChatOllama(model= "qwen3:1.7b" ,temperature=0.7)
+  synopsis_template = """"
+  你是一位编剧。给定一个剧本标题，你的工作是为该标题写一个概要。
+  标题：{title}
+  编剧：这是上述剧本的概要：
+  """
+  synopsis_prompt = PromptTemplate.from_template(synopsis_template)
+  synopsis_chain = LLMChain(llm=llm, prompt=synopsis_prompt)
+  
+  review_template = """"
+  你是《纽约时报》的剧本评论家。给定一个剧本的概要，你的工作是为该剧本写一篇评论。
+  剧本概要：{synopsis}
+  《纽约时报》评论家对上述剧本的评论：
+  """
+  review_prompt = PromptTemplate.from_template(review_template)
+  review_chain = LLMChain(llm=llm, prompt=review_prompt)
+  
+  overall_chain = SimpleSequentialChain(
+      chains=[synopsis_chain, review_chain],
+      verbose=True
+  )
+  
+  result = overall_chain.invoke("悲惨世界")
+  print(result)
+  ```
+
+  使用LCEL高效简洁的链接 LangChain 组件
+
+  ```python
+  from langchain_ollama import ChatOllama
+  from langchain_core.prompts import ChatPromptTemplate
+  from langchain_core.output_parsers import StrOutputParser
+  from langchain_core.runnables import RunnablePassthrough
+  
+  llm = ChatOllama(model="qwen3:1.7b", temperature=0.7)
+  output_parser = StrOutputParser()
+  
+  synopsis_prompt = ChatPromptTemplate.from_template("""
+  你是一位编剧。给定一个剧本标题，你的工作是为该标题写一个概要。
+  标题：{title}
+  编剧：这是上述剧本的概要：
+  """)
+  
+  review_prompt = ChatPromptTemplate.from_template("""
+  你是《纽约时报》的剧本评论家。给定一个剧本的概要，你的工作是为该剧本写一篇评论。
+  剧本概要：{synopsis}
+  《纽约时报》评论家对上述剧本的评论：
+  """)
+  
+  synopsis_chain = synopsis_prompt | llm | output_parser
+  review_chain = review_prompt | llm | output_parser
+  
+  overall_chain = (
+      synopsis_chain
+      | (lambda synopsis: {"synopsis": synopsis})
+      | review_chain
+  )
+  
+  result = overall_chain.invoke({"title": "悲惨世界"})
+  print(result)
+  ```
+
+其他的链路可以查看官方文档，这里不赘述
+
+
 
 # Agents
